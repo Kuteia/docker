@@ -1,0 +1,46 @@
+name: Build docker images
+
+on:
+  schedule:
+    - cron:  '0 18 * * *'
+  push:
+    branches:
+      - main
+
+env:
+  PHP_REPOSITORY: kuteia/php
+
+jobs:
+  build-php:
+    name: Build PHP images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - php_version: 8.2
+            docker_tag: 8.2
+          - php_version: 8.2
+            docker_tag: 8.2-debug
+            php_extra_extensions: xdebug
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./php
+          build-args: |
+            PHP_EXTRA_EXTENSIONS=${{ matrix.php_extra_extensions }}
+            PHP_VERSION=${{ matrix.php_version }}
+          push: true
+          tags: ${{ env.PHP_REPOSITORY }}:${{ matrix.docker_tag }}
