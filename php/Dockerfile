@@ -1,7 +1,7 @@
 ARG PHP_VERSION=8.2
 FROM php:${PHP_VERSION}-apache
 
-ARG PHP_EXTRA_EXTENSIONS=()
+ARG PHP_EXTRA_EXTENSIONS=""
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
@@ -15,3 +15,5 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY ./conf.d/*.ini /usr/local/etc/php/conf.d/
